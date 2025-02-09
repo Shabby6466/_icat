@@ -11,24 +11,50 @@
         <h1>Voting System</h1>
         <div id="notificationArea"></div>
 
-        <div id="createElectionSection" class="section">
-            <h2>Create Election</h2>
-            <input type="text" id="electionName" placeholder="Election Name">
-            <button onclick="createElection()">Create Election</button>
+        <div id="adminSection" class="section">
+            <h2>Admin Panel</h2>
+            <div id="createElectionSection">
+                <h3>Create Election</h3>
+                <input type="text" id="electionName" placeholder="Election Name">
+                <input type="number" id="electionDuration" placeholder="Duration (minutes)">
+                <button onclick="createElection()">Create Election</button>
+            </div>
+
+            <div id="addCandidateSection">
+                <h3>Add Candidate</h3>
+                <input type="number" id="electionId" placeholder="Election ID">
+                <input type="text" id="candidateName" placeholder="Candidate Name">
+                <button onclick="addCandidate()">Add Candidate</button>
+            </div>
+
+            <div id="closeElectionSection">
+                <h3>Close Election</h3>
+                <input type="number" id="closeElectionId" placeholder="Election ID">
+                <button id="closeElectionButton" onclick="closeElection()">Close Election</button>
+            </div>
         </div>
 
-        <div id="addCandidateSection" class="section">
-            <h2>Add Candidate</h2>
-            <input type="number" id="electionId" placeholder="Election ID">
-            <input type="text" id="candidateName" placeholder="Candidate Name">
-            <button onclick="addCandidate()">Add Candidate</button>
+        <div id="voterSection" class="section">
+            <h2>Voter Panel</h2>
+            <div id="registerVoterSection">
+                <h3>Register to Vote</h3>
+                <input type="text" id="voterCNIC" placeholder="CNIC Number">
+                <button onclick="registerVoter()">Register</button>
+            </div>
+
+            <div id="voteSection">
+                <h3>Vote in Active Election</h3>
+                <select id="voteElectionId">
+                    <option value="">Select an active election</option>
+                </select>
+                <input type="number" id="candidateId" placeholder="Candidate ID">
+                <button id="voteButton" onclick="vote()">Vote</button>
+            </div>
         </div>
 
-        <div id="voteSection" class="section">
-            <h2>Vote</h2>
-            <input type="number" id="voteElectionId" placeholder="Election ID">
-            <input type="number" id="candidateId" placeholder="Candidate ID">
-            <button id="voteButton" onclick="vote()">Vote</button>
+        <div id="activeElectionsSection" class="section">
+            <h2>Active Elections</h2>
+            <div id="activeElectionsList"></div>
         </div>
 
         <div id="resultsSection" class="section">
@@ -36,12 +62,6 @@
             <input type="number" id="resultsElectionId" placeholder="Election ID">
             <button id="getResultsButton" onclick="getResults()">Get Results</button>
             <div id="resultsDisplay"></div>
-        </div>
-
-        <div id="closeElectionSection" class="section">
-            <h2>Close Election</h2>
-            <input type="number" id="closeElectionId" placeholder="Election ID">
-            <button id="closeElectionButton" onclick="closeElection()">Close Election</button>
         </div>
     </div>
 

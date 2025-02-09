@@ -1,93 +1,156 @@
 
 body {
-    font-family: Arial, sans-serif;
-    background-color: #f4f4f4;
+    font-family: 'Roboto', Arial, sans-serif;
+    line-height: 1.6;
     margin: 0;
     padding: 20px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    min-height: 100vh;
-}
-
-.container {
-    background-color: #fff;
-    padding: 20px;
-    border-radius: 8px;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-    width: 100%;
-    max-width: 500px;
-    text-align: center;
-}
-
-h1, h2 {
+    background-color: #f0f2f5;
     color: #333;
 }
 
-.section {
-    margin-bottom: 20px;
+.container {
+    max-width: 1000px;
+    margin: auto;
+    padding: 30px;
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
-input {
-    width: calc(100% - 22px);
-    padding: 10px;
-    margin: 10px 0;
-    border: 1px solid #ccc;
+h1, h2, h3, h4 {
+    color: #2c3e50;
+}
+
+input[type="text"],
+input[type="number"] {
+    width: 100%;
+    padding: 12px;
+    margin-bottom: 15px;
+    border: 1px solid #ddd;
     border-radius: 4px;
+    font-size: 16px;
+    transition: border-color 0.3s;
+}
+
+input[type="text"]:focus,
+input[type="number"]:focus {
+    border-color: #3498db;
+    outline: none;
 }
 
 button {
-    padding: 10px 20px;
-    background-color: #28a745;
+    display: inline-block;
+    background-color: #3498db;
     color: #fff;
+    padding: 12px 24px;
     border: none;
     border-radius: 4px;
     cursor: pointer;
-    transition: background-color 0.3s;
+    transition: background-color 0.3s, transform 0.1s;
+    font-size: 16px;
+    font-weight: bold;
 }
 
 button:hover {
-    background-color: #218838;
+    background-color: #2980b9;
 }
 
-#resultsDisplay {
-    margin-top: 20px;
-    text-align: left;
+button:active {
+    transform: scale(0.98);
+}
+
+.section {
+    margin-bottom: 30px;
+    padding: 25px;
+    background-color: #f9f9f9;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    transition: box-shadow 0.3s;
+}
+
+.section:hover {
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 
 #notificationArea {
-    margin-bottom: 20px;
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 1000;
 }
 
 .notification {
-    padding: 10px;
+    padding: 12px 24px;
     margin-bottom: 10px;
     border-radius: 4px;
     color: #fff;
+    opacity: 0;
+    transform: translateX(50px);
+    animation: slideIn 0.3s forwards;
+}
+
+@keyframes slideIn {
+    to {
+        opacity: 0.9;
+        transform: translateX(0);
+    }
 }
 
 .notification.success {
-    background-color: #28a745;
+    background-color: #2ecc71;
 }
 
 .notification.error {
-    background-color: #dc3545;
+    background-color: #e74c3c;
 }
 
 .notification.info {
-    background-color: #17a2b8;
+    background-color: #3498db;
 }
 
-@media (max-width: 600px) {
-    body {
-        padding: 10px;
-    }
+.candidate-result {
+    margin-bottom: 15px;
+    padding: 15px;
+    background-color: #f9f9f9;
+    border-radius: 4px;
+    position: relative;
+    overflow: hidden;
+}
 
-    .container {
-        padding: 15px;
-    }
+.progress-bar {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    height: 4px;
+    background-color: #3498db;
+    transition: width 0.5s ease-in-out;
+}
 
-    input, button {
-        width: 100%;
-    }
+.time-left {
+    font-weight: bold;
+    color: #e74c3c;
+}
+
+#adminSection, #voterSection {
+    border-left: 4px solid #3498db;
+    padding-left: 20px;
+    margin-bottom: 30px;
+}
+
+#activeElectionsList {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 20px;
+}
+
+#activeElectionsList > div {
+    background-color: #fff;
+    border-radius: 8px;
+    padding: 20px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s;
+}
+
+#activeElectionsList > div:hover {
+    transform: translateY(-5px);
 }

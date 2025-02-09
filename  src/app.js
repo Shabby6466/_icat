@@ -38,6 +38,7 @@ async function initContract() {
         
         votingSystem = new web3.eth.Contract(contractABI, contractAddress);
         showNotification('Contract initialized successfully', 'success');
+        displayActiveElections();
     } catch (error) {
         console.error('Error initializing contract:', error);
         showNotification('Failed to initialize contract. Check console for details.', 'error');
@@ -60,6 +61,32 @@ function hideLoading(elementId, originalText) {
 
 // Update existing functions and add new ones
 
+// New function for voter registration
+async function registerVoter() {
+    const cnic = document.getElementById('voterCNIC').value;
+    if (!validateInput(cnic, 'string')) {
+        showNotification('Please enter a valid CNIC number.', 'error');
+        return;
+    }
+    try {
+        showLoading('registerVoterButton');
+        const accounts = await web3.eth.getAccounts();
+        await votingSystem.methods.registerVoter(cnic).send({ from: accounts[0] });
+        showNotification('Voter registered successfully!', 'success');
+    } catch (error) {
+        console.error(error);
+        if (error.message.includes('CNIC already registered')) {
+            showNotification('This CNIC is already registered.', 'error');
+        } else if (error.message.includes('User denied transaction')) {
+            showNotification('Transaction cancelled by user.', 'error');
+        } else {
+            showNotification('Failed to register voter. Check console for details.', 'error');
+        }
+    } finally {
+        hideLoading('registerVoterButton', 'Register');
+    }
+}
+
 async function vote() {
     const electionId = document.getElementById('voteElectionId').value;
     const candidateId = document.getElementById('candidateId').value;
@@ -70,15 +97,54 @@ async function vote() {
     try {
         showLoading('voteButton');
         const accounts = await web3.eth.getAccounts();
+        
+        // Check if the voter has already voted
+        const hasVoted = await votingSystem.methods.hasVoted(electionId, accounts[0]).call();
+        if (hasVoted) {
+            showNotification('You have already voted in this election.', 'error');
+            return;
+        }
+        
+        // Check if the election is still active
+        const election = await votingSystem.methods.elections(electionId).call();
+        if (!election.isActive || new Date(election.deadline * 1000) <= new Date()) {
+            showNotification('This election has ended.', 'error');
+            return;
+        }
+        
         await votingSystem.methods.vote(electionId, candidateId).send({ from: accounts[0] });
         showNotification('Vote cast successfully!', 'success');
+        
+        // Refresh the active elections display
+        await displayActiveElections();
     } catch (error) {
         console.error(error);
-        showNotification('Failed to cast vote. Check console for details.', 'error');
+        if (error.message.includes('User denied transaction')) {
+            showNotification('Transaction cancelled by user.', 'error');
+        } else if (error.message.includes('Invalid candidate')) {
+            showNotification('Invalid candidate ID.', 'error');
+        } else {
+            showNotification('Failed to cast vote. Check console for details.', 'error');
+        }
     } finally {
         hideLoading('voteButton', 'Vote');
     }
 }
+
+// Function to check network connection
+async function checkConnection() {
+    try {
+        await web3.eth.net.isListening();
+        return true;
+    } catch (error) {
+        console.error('Lost connection to the network:', error);
+        showNotification('Lost connection to the network. Please check your internet connection and reload the page.', 'error');
+        return false;
+    }
+}
+
+// Periodically check network connection
+setInterval(checkConnection, 30000); // Check every 30 seconds
 
 async function getResults() {
     const electionId = document.getElementById('resultsElectionId').value;
@@ -88,19 +154,100 @@ async function getResults() {
     }
     try {
         showLoading('getResultsButton');
-        const results = await votingSystem.methods.getResults(electionId).call();
-        const resultsDisplay = document.getElementById('resultsDisplay');
-        resultsDisplay.innerHTML = '';
-        results.forEach(candidate => {
-            const candidateInfo = document.createElement('div');
-            candidateInfo.textContent = `Candidate ID: ${candidate.id}, Name: ${candidate.name}, Votes: ${candidate.voteCount}`;
-            resultsDisplay.appendChild(candidateInfo);
-        });
+        await updateResults(electionId);
+        // Set up real-time updates
+        const updateInterval = setInterval(async () => {
+            const election = await votingSystem.methods.elections(electionId).call();
+            if (!election.isActive) {
+                clearInterval(updateInterval);
+                showNotification('Election has ended. Final results displayed.', 'info');
+            } else {
+                await updateResults(electionId);
+            }
+        }, 10000); // Update every 10 seconds
     } catch (error) {
         console.error(error);
         showNotification('Failed to get results. Check console for details.', 'error');
     } finally {
         hideLoading('getResultsButton', 'Get Results');
+    }
+}
+
+async function updateResults(electionId) {
+    const results = await votingSystem.methods.getResults(electionId).call();
+    const resultsDisplay = document.getElementById('resultsDisplay');
+    resultsDisplay.innerHTML = '';
+    results.forEach(candidate => {
+        const candidateInfo = document.createElement('div');
+        candidateInfo.className = 'candidate-result';
+        candidateInfo.innerHTML = `
+            <h4>${candidate.name}</h4>
+            <p>Votes: <span class="vote-count">${candidate.voteCount}</span></p>
+            <div class="progress-bar" style="width: ${(candidate.voteCount / results.reduce((sum, c) => sum + parseInt(c.voteCount), 0)) * 100}%"></div>
+        `;
+        resultsDisplay.appendChild(candidateInfo);
+    });
+}
+
+// Function to display active elections
+async function displayActiveElections() {
+    try {
+        const activeElectionsList = document.getElementById('activeElectionsList');
+        const voteElectionSelect = document.getElementById('voteElectionId');
+        activeElectionsList.innerHTML = '';
+        voteElectionSelect.innerHTML = '<option value="">Select an active election</option>';
+        const electionCount = await votingSystem.methods.electionCount().call();
+        for (let i = 1; i <= electionCount; i++) {
+            const election = await votingSystem.methods.elections(i).call();
+            const deadline = new Date(election.deadline * 1000);
+            const timeLeft = deadline - Date.now();
+            
+            if (election.isActive && timeLeft > 0) {
+                const electionInfo = document.createElement('div');
+                const hoursLeft = Math.floor(timeLeft / (1000 * 60 * 60));
+                const minutesLeft = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
+                electionInfo.innerHTML = `
+                    <h3>Election ID: ${election.id}</h3>
+                    <p>Name: ${election.name}</p>
+                    <p>Deadline: ${deadline.toLocaleString()}</p>
+                    <p class="time-left">Time left: ${hoursLeft}h ${minutesLeft}m</p>
+                `;
+                activeElectionsList.appendChild(electionInfo);
+                
+                // Add election to the vote select element
+                const option = document.createElement('option');
+                option.value = election.id;
+                option.textContent = `${election.name} (ID: ${election.id})`;
+                voteElectionSelect.appendChild(option);
+                
+                // Update time left every minute
+                const intervalId = setInterval(() => {
+                    const newTimeLeft = deadline - Date.now();
+                    if (newTimeLeft <= 0) {
+                        clearInterval(intervalId);
+                        electionInfo.remove();
+                        option.remove();
+                        showNotification(`Election "${election.name}" has ended.`, 'info');
+                    } else {
+                        const newHoursLeft = Math.floor(newTimeLeft / (1000 * 60 * 60));
+                        const newMinutesLeft = Math.floor((newTimeLeft % (1000 * 60 * 60)) / (1000 * 60));
+                        electionInfo.querySelector('.time-left').textContent = `Time left: ${newHoursLeft}h ${newMinutesLeft}m`;
+                    }
+                }, 60000);
+            } else if (election.isActive && timeLeft <= 0) {
+                // Automatically close expired elections
+                try {
+                    const accounts = await web3.eth.getAccounts();
+                    await votingSystem.methods.closeElection(election.id).send({ from: accounts[0] });
+                    showNotification(`Election "${election.name}" has been automatically closed.`, 'info');
+                } catch (error) {
+                    console.error(`Failed to automatically close election ${election.id}:`, error);
+                }
+            }
+        }
+    } catch (error) {
+        console.error(error);
+        showNotification('Failed to fetch active elections. Check console for details.', 'error');
     }
 }
 
