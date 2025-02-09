@@ -17,15 +17,18 @@
     "chai": "^4.1.2",
     "chai-as-promised": "^7.1.1",
     "chai-bignumber": "^2.0.2",
+    "ganache-cli": "^6.12.2",
     "lite-server": "^2.3.0",
     "nodemon": "^1.17.3",
-    "truffle": "5.0.2",
-    "truffle-contract": "3.0.6"
+    "truffle": "^5.0.2",
+    "truffle-contract": "3.0.6",
+    "web3": "^4.16.0"
   },
   "dependencies": {
     "18": "^0.0.0",
     "@trufflesuite/uws-js-unofficial": "npm:ws@^8.0.0",
-    "nvm": "^0.0.4"
+    "nvm": "^0.0.4",
+    "solc": "^0.8.28"
   },
   "resolutions": {
     "@trufflesuite/uws-js-unofficial": "^20.30.0-unofficial.0",
