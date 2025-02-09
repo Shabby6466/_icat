@@ -27,20 +27,104 @@ async function initWeb3() {
 let votingSystem;
 
 async function initContract() {
-    const response = await fetch('./build/contracts/VotingSystem.json');
-    const data = await response.json();
-    const contractABI = data.abi;
-    const networkId = await web3.eth.net.getId();
-    const deployedNetwork = data.networks[networkId];
-    
-    if (!deployedNetwork) {
-        showNotification('Contract not deployed on the current network.', 'error');
+    try {
+        const response = await fetch('/build/contracts/VotingSystem.json');
+        const data = await response.json();
+        const contractABI = data.abi;
+        
+        // For development purposes, we'll use a placeholder address
+        // In a real-world scenario, you'd get this from the deployment process
+        const contractAddress = '0x1234567890123456789012345678901234567890';
+        
+        votingSystem = new web3.eth.Contract(contractABI, contractAddress);
+        showNotification('Contract initialized successfully', 'success');
+    } catch (error) {
+        console.error('Error initializing contract:', error);
+        showNotification('Failed to initialize contract. Check console for details.', 'error');
+    }
+}
+
+// Function to show loading indicator
+function showLoading(elementId) {
+    const element = document.getElementById(elementId);
+    element.disabled = true;
+    element.innerHTML = 'Processing...';
+}
+
+// Function to hide loading indicator
+function hideLoading(elementId, originalText) {
+    const element = document.getElementById(elementId);
+    element.disabled = false;
+    element.innerHTML = originalText;
+}
+
+// Update existing functions and add new ones
+
+async function vote() {
+    const electionId = document.getElementById('voteElectionId').value;
+    const candidateId = document.getElementById('candidateId').value;
+    if (!validateInput(electionId, 'number') || !validateInput(candidateId, 'number')) {
+        showNotification('Please enter valid election ID and candidate ID.', 'error');
         return;
     }
-    
-    const contractAddress = deployedNetwork.address;
-    votingSystem = new web3.eth.Contract(contractABI, contractAddress);
+    try {
+        showLoading('voteButton');
+        const accounts = await web3.eth.getAccounts();
+        await votingSystem.methods.vote(electionId, candidateId).send({ from: accounts[0] });
+        showNotification('Vote cast successfully!', 'success');
+    } catch (error) {
+        console.error(error);
+        showNotification('Failed to cast vote. Check console for details.', 'error');
+    } finally {
+        hideLoading('voteButton', 'Vote');
+    }
 }
+
+async function getResults() {
+    const electionId = document.getElementById('resultsElectionId').value;
+    if (!validateInput(electionId, 'number')) {
+        showNotification('Please enter a valid election ID.', 'error');
+        return;
+    }
+    try {
+        showLoading('getResultsButton');
+        const results = await votingSystem.methods.getResults(electionId).call();
+        const resultsDisplay = document.getElementById('resultsDisplay');
+        resultsDisplay.innerHTML = '';
+        results.forEach(candidate => {
+            const candidateInfo = document.createElement('div');
+            candidateInfo.textContent = `Candidate ID: ${candidate.id}, Name: ${candidate.name}, Votes: ${candidate.voteCount}`;
+            resultsDisplay.appendChild(candidateInfo);
+        });
+    } catch (error) {
+        console.error(error);
+        showNotification('Failed to get results. Check console for details.', 'error');
+    } finally {
+        hideLoading('getResultsButton', 'Get Results');
+    }
+}
+
+async function closeElection() {
+    const electionId = document.getElementById('closeElectionId').value;
+    if (!validateInput(electionId, 'number')) {
+        showNotification('Please enter a valid election ID.', 'error');
+        return;
+    }
+    try {
+        showLoading('closeElectionButton');
+        const accounts = await web3.eth.getAccounts();
+        await votingSystem.methods.closeElection(electionId).send({ from: accounts[0] });
+        showNotification('Election closed successfully!', 'success');
+    } catch (error) {
+        console.error(error);
+        showNotification('Failed to close election. Check console for details.', 'error');
+    } finally {
+        hideLoading('closeElectionButton', 'Close Election');
+    }
+}
+
+// Initialize web3 when the page loads
+window.addEventListener('load', initWeb3);
 
 // Function to show notifications
 function showNotification(message, type = 'info') {
