@@ -953,7 +953,7 @@
   "sourceMap": "57:570:0:-:0;;;150:49;;;;;;;;;-1:-1:-1;174:5:0;:18;;-1:-1:-1;;;;;;174:18:0;182:10;174:18;;;57:570;;;;;;",
   "deployedSourceMap": "57:570:0:-:0;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;386:239;;;;;;:::i;:::-;;:::i;:::-;;83:20;;;:::i;:::-;;;;;;;:::i;:::-;;;;;;;;109:34;;;:::i;:::-;;;;;;;:::i;205:175::-;;;;;;:::i;:::-;;:::i;386:239::-;462:5;;-1:-1:-1;;;;;462:5:0;448:10;:19;440:69;;;;-1:-1:-1;;;440:69:0;;;;;;;:::i;:::-;;;;;;;;;595:22;;573:45;;-1:-1:-1;;;573:45:0;;552:10;;-1:-1:-1;;;;;573:21:0;;;;;:45;;;;;:::i;:::-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;386:239;;:::o;83:20::-;;;-1:-1:-1;;;;;83:20:0;;:::o;109:34::-;;;;:::o;205:175::-;282:5;;-1:-1:-1;;;;;282:5:0;268:10;:19;260:69;;;;-1:-1:-1;;;260:69:0;;;;;;;:::i;:::-;339:22;:34;205:175::o;14:306:2:-;;126:2;114:9;105:7;101:23;97:32;94:2;;;147:6;139;132:22;94:2;178:23;;-1:-1:-1;;;;;230:31:2;;220:42;;210:2;;281:6;273;266:22;210:2;309:5;84:236;-1:-1:-1;;;84:236:2:o;325:190::-;;437:2;425:9;416:7;412:23;408:32;405:2;;;458:6;450;443:22;405:2;-1:-1:-1;486:23:2;;395:120;-1:-1:-1;395:120:2:o;520:203::-;-1:-1:-1;;;;;684:32:2;;;;666:51;;654:2;639:18;;621:102::o;728:401::-;930:2;912:21;;;969:2;949:18;;;942:30;1008:34;1003:2;988:18;;981:62;-1:-1:-1;;;1074:2:2;1059:18;;1052:35;1119:3;1104:19;;902:227::o;1134:177::-;1280:25;;;1268:2;1253:18;;1235:76::o",
   "source": "// SPDX-License-Identifier: MIT\npragma solidity ^0.8.0;\n\ncontract Migrations {\n    address public owner;\n    uint public lastCompletedMigration;\n\n    constructor() {\n        owner = msg.sender;\n    }\n\n    function setCompleted(uint completed) public {\n        require(msg.sender == owner, \"Only the owner can call this function\");\n        lastCompletedMigration = completed;\n    }\n\n    function upgrade(address newAddress) public {\n        require(msg.sender == owner, \"Only the owner can call this function\");\n        Migrations upgraded = Migrations(newAddress);\n        upgraded.setCompleted(lastCompletedMigration);\n    }\n}\n",
-  "sourcePath": "C:\\Users\\Khizer Ali\\Voting-system\\contracts\\Migrations.sol",
+  "sourcePath": "/Users/Akmal/Desktop/Decentralized-voting-system--main/contracts/Migrations.sol",
   "ast": {
     "absolutePath": "project:/contracts/Migrations.sol",
     "exportedSymbols": {
@@ -1716,7 +1716,7 @@
     }
   },
   "schemaVersion": "3.4.16",
-  "updatedAt": "2025-02-06T12:46:49.119Z",
+  "updatedAt": "2025-02-09T12:09:43.235Z",
   "devdoc": {
     "kind": "dev",
     "methods": {},
